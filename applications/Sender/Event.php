@@ -94,13 +94,13 @@ class Event
         // 根据类型做相应的业务逻辑
         switch($message_data['type'])
         {
-            // 发送数据给用户 message: {type:say, to_uid:xx, content:xx}
+            // 发送数据给用户 message: {type:send, to_uid:xx, content:xx}
             case 'send':
                 // 向某个用户发送消息
                 if($message_data['to_uid'] != 'all')
                 {
                     $new_message = array(
-                        'type'=>'say',
+                        'type'=>'send',
                         'from_uid'=>$uid, 
                         'to_uid'=>$message_data['to_uid'],
                         'content'=>nl2br($message_data['content']),
@@ -110,7 +110,7 @@ class Event
                 }
                 // 向所有用户发送消息
                 $new_message = array(
-                    'type'=>'say', 
+                    'type'=>'send', 
                     'from_uid'=>$uid,
                     'to_uid'=>'all',
                     'content'=>nl2br($message_data['content']),
