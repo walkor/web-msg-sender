@@ -1,11 +1,11 @@
 ws = {};
 if (typeof console == "undefined") {    this.console = { log: function (msg) {  } };}
-WEB_SOCKET_SWF_LOCATION = "http://"+window.location.host+"/swf/WebSocketMain.swf";
+WEB_SOCKET_SWF_LOCATION = "http://workerman.net:3333/swf/WebSocketMain.swf";
 WEB_SOCKET_DEBUG = true;
 window.onload = function()
 {
 	// =====================================================
-	ws = new WebSocket("ws://"+document.domain+":3232/");
+	ws = new WebSocket("ws://workerman.net:3232/");
 	ws.onopen = function() {
 		// 发送数据
 		ws.send(JSON.stringify({"type":"login","name":"xx"}));
