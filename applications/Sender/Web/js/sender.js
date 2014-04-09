@@ -1,4 +1,4 @@
-var ws;
+ws = {};
 if (typeof console == "undefined") {    this.console = { log: function (msg) {  } };}
 WEB_SOCKET_SWF_LOCATION = "/swf/WebSocketMain.swf";
 WEB_SOCKET_DEBUG = true;
@@ -7,7 +7,7 @@ window.onload = function()
 	// =====================================================
 	ws = new WebSocket("ws://"+document.domain+":3232/");
 	// socket连接打开
-	ws.send(1);
+	ws.send(JSON.stringify({"type":"login","name":"xx"}));
 	
 	//当有消息时根据消息类型显示不同信息
 	ws.onmessage = function(e) {
