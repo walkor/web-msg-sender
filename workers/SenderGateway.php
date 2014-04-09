@@ -143,10 +143,10 @@ class SenderGateway extends Man\Core\SocketWorker
     
     protected function initWorkerAddresses()
     {
-        $this->workerAddresses = Man\Core\Lib\Config::get($this->workerName.'.game_worker');
+        $this->workerAddresses = Man\Core\Lib\Config::get($this->workerName.'.sender_worker');
         if(!$this->workerAddresses)
         {
-            $this->notice($this->workerName.'game_worker not set');
+            $this->notice($this->workerName.'sender_worker not set');
         }
     }
     
