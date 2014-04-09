@@ -1,3 +1,35 @@
+window.onload = function()
+{
+	// =====================================================
+	ws = new WebSocket("ws://"+document.domain+":3232/");
+	// socket连接打开
+	ws.send(JSON.stringify({"type":"login","name":"xx"}));
+	
+	//当有消息时根据消息类型显示不同信息
+	ws.onmessage = function(e) {
+		console.log(e.data);
+	  var data = JSON.parse(e.data);
+	  switch(data['type']){
+	        // 展示消息
+	        case 'send':
+	      	  //{"type":"say","from_uid":xxx,"to_uid":"all/uid","content":"xxx","time":"xxx"}
+	      	  alert('from_uid:'+data['from_uid'] + ' to_uid:' + data['to_uid'] + '消息:' +data['content'] + '时间:' + data['time']);
+	      	  break;
+	  }
+	};
+	ws.onclose = function() {
+		  console.log("服务端关闭了连接");
+	};
+	ws.onerror = function() {
+		  console.log("出现错误");
+	};
+}
+
+
+
+
+
+
 /*	SWFObject v2.2 <http://code.google.com/p/swfobject/> 
 	is released under the MIT License <http://www.opensource.org/licenses/mit-license.php> 
 */
@@ -891,28 +923,3 @@ if (!window.WEB_SOCKET_DISABLE_AUTO_INITIALIZATION) {
 }
 
 })();
-
-// =====================================================
-ws = new WebSocket("ws://"+document.domain+":3232/");
-// socket连接打开
-ws.send(JSON.stringify({"type":"login","name":"xx"}));
-
-//当有消息时根据消息类型显示不同信息
-ws.onmessage = function(e) {
-	console.log(e.data);
-  var data = JSON.parse(e.data);
-  switch(data['type']){
-        // 展示消息
-        case 'send':
-      	  //{"type":"say","from_uid":xxx,"to_uid":"all/uid","content":"xxx","time":"xxx"}
-      	  alert('from_uid:'+data['from_uid'] + ' to_uid:' + data['to_uid'] + '消息:' +data['content'] + '时间:' + data['time']);
-      	  break;
-  }
-};
-ws.onclose = function() {
-	  console.log("服务端关闭了连接");
-};
-ws.onerror = function() {
-	  console.log("出现错误");
-};
-
