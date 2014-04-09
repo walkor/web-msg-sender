@@ -9,7 +9,6 @@
   <!-- Include these three JS files: -->
  <script type="text/javascript" src="/js/swfobject.js"></script>
   <script type="text/javascript" src="/js/web_socket.js"></script>
-  <script type="text/javascript" src="/js/jquery.min.js"></script>
   <script type="text/javascript" src="/js/json.js"></script>
 
   <script type="text/javascript">
