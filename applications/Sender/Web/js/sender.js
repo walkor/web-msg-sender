@@ -7,13 +7,18 @@ window.onload = function()
 	
 	//当有消息时根据消息类型显示不同信息
 	ws.onmessage = function(e) {
-		console.log(e.data);
+	  console.log(e.data);
 	  var data = JSON.parse(e.data);
 	  switch(data['type']){
 	        // 展示消息
 	        case 'send':
 	      	  //{"type":"say","from_uid":xxx,"to_uid":"all/uid","content":"xxx","time":"xxx"}
-	      	  alert('from_uid:'+data['from_uid'] + ' to_uid:' + data['to_uid'] + '消息:' +data['content'] + '时间:' + data['time']);
+	        	if(typeof('show_msg')=="function"){
+	        		show_msg(e.data);
+	        	}
+	        	else{
+	        		alert('from_uid:'+data['from_uid'] + ' to_uid:' + data['to_uid'] + '消息:' +data['content'] + '时间:' + data['time']);
+	        	}
 	      	  break;
 	  }
 	};
