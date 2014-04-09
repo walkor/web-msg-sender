@@ -10,7 +10,6 @@
  <!--  <script type="text/javascript" src="/js/swfobject.js"></script>
   <script type="text/javascript" src="/js/web_socket.js"></script>
   <script type="text/javascript" src="/js/json.js"></script> -->
-  <script type="text/javascript" src="/js/sender.js"></script>
 
   <script type="text/javascript">
     // 提交对话
@@ -39,5 +38,6 @@
 	        </div>
 	    </div>
     </div>
+     <script type="text/javascript" src="/js/sender.js"></script>
 </body>
 </html>
