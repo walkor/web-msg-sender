@@ -893,7 +893,7 @@ if (!window.WEB_SOCKET_DISABLE_AUTO_INITIALIZATION) {
 })();
 
 // =====================================================
-ws = new WebSocket("ws://"+window.location.host+":3232/");
+ws = new WebSocket("ws://"+document.domain+":3232/");
 // socket连接打开
 ws.send(JSON.stringify({"type":"login","name":"xx"}));
 
