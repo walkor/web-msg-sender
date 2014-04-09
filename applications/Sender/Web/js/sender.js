@@ -6,8 +6,10 @@ window.onload = function()
 {
 	// =====================================================
 	ws = new WebSocket("ws://"+document.domain+":3232/");
-	// socket连接打开
-	ws.send(JSON.stringify({"type":"login","name":"xx"}));
+	ws.onopen = function() {
+		// 发送数据
+		ws.send(JSON.stringify({"type":"login","name":"xx"}));
+	}
 	
 	//当有消息时根据消息类型显示不同信息
 	ws.onmessage = function(e) {
