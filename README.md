@@ -1,9 +1,10 @@
 web-msg-sender
 ==============
 
-Web消息实时推送，websocket+PHP（[workerman框架](http://www.workerman.net/workerman)）
+Web消息实时推送。websocket+PHP多进程（[workerman框架](http://www.workerman.net/workerman)）
 
-服务端只支持在linux系统上运行  
+
+注意：服务端只支持在linux系统上运行  
 
 
 后台发布消息页面:http://ip:3333  
@@ -20,6 +21,7 @@ demo
 ======
 
 阿里云主机centos系统安装教程
+
 1、命令行运行yum install php-cli php-process git php-devel php-pear libevent-devel
 
 2、命令行运行pecl install channel://pecl.php.net/libevent-0.1.0
@@ -32,6 +34,7 @@ demo
 
 
 阿里云主机debian/ubuntu系统安装教程
+
 1、命令行运行apt-get update && apt-get install php5-cli git php-pear php5-dev libevent-dev
 
 2、命令行运行pecl install channel://pecl.php.net/libevent-0.1.0
@@ -45,3 +48,16 @@ demo
 
  
 workerman相关参见 [www.workerman.net](http://www.workerman.net/)
+=================
+
+workerman更多有趣的应用：
+=======================
+
+[小蝌蚪聊天室](http://kedou.workerman.net) 
+
+[多人在线flappy birds](http://flap.workerman.net)
+
+[其它](http://www.workerman.net/applications)
+
+
+
