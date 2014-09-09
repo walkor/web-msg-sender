@@ -63,7 +63,7 @@ class Event
             // 发送数据给用户 message: {type:send, to_client_id:xx, content:xx}
             case 'send':
                 // 向某个浏览器窗口发送消息
-                if($message_data['to_client'] != 'all')
+                if($message_data['to_client_id'] != 'all')
                 {
                     $new_message = array(
                             'type'=>'send',
