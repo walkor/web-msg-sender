@@ -72,7 +72,7 @@ class Event
                             'content'=>nl2br($message_data['content']),
                             'time'=>date('Y-m-d :i:s'),
                     );
-                    return Gateway::sendToClient($message_data['to_client_id'], json_encode($new_message));
+                    return Gateway::sendToClient($message_data['to_client_id'], Websocket::encode(json_encode($new_message)));
                 }
                 // 向所有浏览器发送消息
                 $new_message = array(
@@ -82,7 +82,7 @@ class Event
                         'content'=>nl2br($message_data['content']),
                         'time'=>date('Y-m-d :i:s'),
                 );
-                return Gateway::sendToAll(json_encode($new_message));
+                return Gateway::sendToAll(Websocket::encode(json_encode($new_message)));
         }
         
    }
