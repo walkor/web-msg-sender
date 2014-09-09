@@ -18,12 +18,12 @@ WEB_SOCKET_SUPPRESS_CROSS_DOMAIN_SWF_ERROR = true
 	  switch(data['type']){
 	        // 展示消息
 	        case 'send':
-	      	  //{"type":"say","from_uid":xxx,"to_uid":"all/uid","content":"xxx","time":"xxx"}
+	      	  //{"type":"say","from_$client_id":xxx,"to_$client_id":"all/$client_id","content":"xxx","time":"xxx"}
 	        	if(typeof('show_msg')=="function"){
 	        		show_msg(data);
 	        	}
 	        	else{
-	        		alert('from_uid:'+data['from_uid'] + ' to_uid:' + data['to_uid'] + '消息:' +data['content'] + '时间:' + data['time']);
+	        		alert('from_$client_id:'+data['from_$client_id'] + ' to_$client_id:' + data['to_$client_id'] + '消息:' +data['content'] + '时间:' + data['time']);
 	        	}
 	      	  break;
 	  }

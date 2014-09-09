@@ -19,12 +19,12 @@ window.onload = function()
 	  switch(data['type']){
 	        // 展示消息
 	        case 'send':
-	      	  //{"type":"say","from_uid":xxx,"to_uid":"all/uid","content":"xxx","time":"xxx"}
+	      	  //{"type":"say","from_client_id":xxx,"to_client_id":"all/client_id","content":"xxx","time":"xxx"}
 	        	if(typeof('show_msg')=="function"){
 	        		show_msg(data);
 	        	}
 	        	else{
-	        		alert('from_uid:'+data['from_uid'] + ' to_uid:' + data['to_uid'] + '消息:' +data['content'] + '时间:' + data['time']);
+	        		alert('from_client_id:'+data['from_client_id'] + ' to_client_id:' + data['to_client_id'] + '消息:' +data['content'] + '时间:' + data['time']);
 	        	}
 	      	  break;
 	  }
