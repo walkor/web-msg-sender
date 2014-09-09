@@ -11,7 +11,7 @@
   <script type="text/javascript">
     // 展示推送的信息，这里只是简单alert出来
     function show_msg(data) {
-    	alert('from_uid:'+data['from_uid'] + ' to_uid:' + data['to_uid'] + '消息:' +data['content'] + '时间:' + data['time']);
+    	alert('from_client_id:'+data['from_client_id'] + ' to_client_id:' + data['to_client_id'] + '消息:' +data['content'] + '时间:' + data['time']);
     }
 
   </script>
@@ -26,7 +26,7 @@
 	        <h3>这是一个空的页面，通过websocket协议来接收服务器推送过来的消息</h3>
 	        <p>展示逻辑在javascript函数show_msg(data)中，本页面只是简单alert出来，如下：</p>
 	          <pre><code>function show_msg(data) {
-    	alert('from_uid:'+data['from_uid'] + ' to_uid:' + data['to_uid'] + '消息:' +data['content'] + '时间:' + data['time']);
+    	alert('from_client_id:'+data['from_client_id'] + ' to_client_id:' + data['to_client_id'] + '消息:' +data['content'] + '时间:' + data['time']);
     }</code></pre>
 	        </div>
 	        <div class="col-md-1 column">

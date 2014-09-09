@@ -1,21 +1,107 @@
 <?php
 /**
  * 
- * 聊天主逻辑
- * 主要是处理 onConnect onMessage onClose 三个方法
- * @author walkor <worker-man@qq.com>
+ * 主逻辑
+ * 主要是处理onGatewayMessage onMessage onClose 三个方法
+ * @author walkor <workerman.net>
  * 
  */
-
-require_once WORKERMAN_ROOT_DIR . 'applications/Sender/Gateway.php';
-require_once WORKERMAN_ROOT_DIR . 'applications/Common/Protocols/WebSocket.php';
+use \Lib\Context;
+use \Lib\Gateway;
+use \Lib\StatisticClient;
+use \Lib\Store;
+use \Protocols\GatewayProtocol;
+use \Protocols\WebSocket;
 
 class Event
 {
+    /**
+     * 网关有消息时，判断消息是否完整
+     */
+    public static function onGatewayMessage($buffer)
+    {
+        return WebSocket::check($buffer);
+    }
+   
    /**
-    * 当有用户连接时，会触发该方法
+    * 有消息时
+    * @param int $client_id
+    * @param string $message
     */
-   public static function onConnect($message)
+   public static function onMessage($client_id, $message)
+   {
+       // 如果是websocket握手
+       if(self::checkHandshake($message))
+       {
+           // debug
+           echo "client:{$_SERVER['REMOTE_ADDR']}:{$_SERVER['REMOTE_PORT']} gateway:{$_SERVER['GATEWAY_ADDR']}:{$_SERVER['GATEWAY_PORT']}  client_id:$client_id onMessage:".$message."\n";
+           return;
+       }
+       
+       // 判断是不是websocket的关闭连接的包
+        if(WebSocket::isClosePacket($message))
+        {
+            Gateway::kickClient($client_id);
+            return self::onClose($client_id);
+        }
+        
+        // 解码websocket，得到原始数据
+        $message =WebSocket::decode($message);
+        // debug
+        echo "client:{$_SERVER['REMOTE_ADDR']}:{$_SERVER['REMOTE_PORT']} gateway:{$_SERVER['GATEWAY_ADDR']}:{$_SERVER['GATEWAY_PORT']}  client_id:$client_id session:".json_encode($_SESSION)." onMessage:".$message."\n";
+        
+        // 客户端传递的是json数据
+        $message_data = json_decode($message, true);
+        if(!$message_data)
+        {
+            return ;
+        }
+        
+        // 根据类型做相应的业务逻辑
+        switch($message_data['type'])
+        {
+            // 发送数据给用户 message: {type:send, to_client_id:xx, content:xx}
+            case 'send':
+                // 向某个浏览器窗口发送消息
+                if($message_data['to_client'] != 'all')
+                {
+                    $new_message = array(
+                            'type'=>'send',
+                            'from_client_id'=>$client_id,
+                            'to_client_id'=>$message_data['to_client_id'],
+                            'content'=>nl2br($message_data['content']),
+                            'time'=>date('Y-m-d :i:s'),
+                    );
+                    return Gateway::sendToClient($message_data['to_client_id'], json_encode($new_message));
+                }
+                // 向所有浏览器发送消息
+                $new_message = array(
+                        'type'=>'send',
+                        'from_client_id'=>$client_id,
+                        'to_client_id'=>'all',
+                        'content'=>nl2br($message_data['content']),
+                        'time'=>date('Y-m-d :i:s'),
+                );
+                return Gateway::sendToAll(json_encode($new_message));
+        }
+        
+   }
+   
+   /**
+    * 当客户端断开连接时
+    * @param integer $client_id 客户端id
+    */
+   public static function onClose($client_id)
+   {
+       // debug
+       echo "client:{$_SERVER['REMOTE_ADDR']}:{$_SERVER['REMOTE_PORT']} gateway:{$_SERVER['GATEWAY_ADDR']}:{$_SERVER['GATEWAY_PORT']}  client_id:$client_id onClose:''\n";
+   }
+   
+   /**
+    * websocket协议握手
+    * @param string $message
+    */
+   public static function checkHandshake($message)
    {
        // WebSocket 握手阶段
        if(0 === strpos($message, 'GET'))
@@ -33,91 +119,19 @@ class Event
            $new_message .= "Sec-WebSocket-Version: 13\r\n";
            $new_message .= "Connection: Upgrade\r\n";
            $new_message .= "Sec-WebSocket-Accept: " . $new_key . "\r\n\r\n";
-           
-           // 这里简单的把时间戳当成uid，开发者可以按照自己的实际情况得到uid
-           $uid = substr(strval(microtime(true)), 3, 10)*100;
-           
-           // 记录uid到gateway通信地址的映射
-           GateWay::storeUid($uid);
-           
-           // 发送数据包到address对应的gateway，确认connection成功
-           GateWay::notifyConnectionSuccess($uid);
-           
+            
            // 发送数据包到客户端 完成握手
-           return GateWay::sendToCurrentUid($new_message, true);
+           Gateway::sendToCurrentClient($new_message);
+           return true;
        }
        // 如果是flash发来的policy请求
        elseif(trim($message) === '<policy-file-request/>')
        {
            $policy_xml = '<?xml version="1.0"?><cross-domain-policy><site-control permitted-cross-domain-policies="all"/><allow-access-from domain="*" to-ports="*"/></cross-domain-policy>'."\0";
-           return GateWay::sendToCurrentUid($policy_xml, true);
+           Gateway::sendToCurrentClient($policy_xml);
+           return true;
        }
-       
-       return null;
+       return false;
    }
-   
-   /**
-    * 当用户断开连接时
-    * @param integer $uid 用户id 
-    */
-   public static function onClose($uid)
-   {
-       // [这步是必须的]删除这个用户的gateway通信地址
-       GateWay::deleteUidAddress($uid);
 
-       // 广播 xxx 退出了
-       //GateWay::sendToAll(json_encode(array('type'=>'logout', 'uid'=> $uid, 'time'=>date('Y-m-d H:i:s'))));
-       
-   }
-   
-   /**
-    * 有消息时
-    * @param int $uid
-    * @param string $message
-    */
-   public static function onMessage($uid, $message)
-   {
-        // $message len < 7 是用户退出了,直接返回，等待socket关闭触发onclose方法
-        if(strlen($message) < 7)
-        {
-            return ;
-        }
-        $message = \App\Common\Protocols\WebSocket::decode($message);
-        $message_data = json_decode($message, true);
-        
-        $message_data = json_decode($message, true);
-        if(!$message_data)
-        {
-            return ;
-        }
-        
-        // 根据类型做相应的业务逻辑
-        switch($message_data['type'])
-        {
-            // 发送数据给用户 message: {type:send, to_uid:xx, content:xx}
-            case 'send':
-                // 向某个用户发送消息
-                if($message_data['to_uid'] != 'all')
-                {
-                    $new_message = array(
-                        'type'=>'send',
-                        'from_uid'=>$uid, 
-                        'to_uid'=>$message_data['to_uid'],
-                        'content'=>nl2br($message_data['content']),
-                        'time'=>date('Y-m-d :i:s'),
-                    );
-                    return Gateway::sendToUid($message_data['to_uid'], json_encode($new_message));
-                }
-                // 向所有用户发送消息
-                $new_message = array(
-                    'type'=>'send', 
-                    'from_uid'=>$uid,
-                    'to_uid'=>'all',
-                    'content'=>nl2br($message_data['content']),
-                    'time'=>date('Y-m-d :i:s'),
-                );
-                return Gateway::sendToAll(json_encode($new_message));
-        }
-   }
-   
 }

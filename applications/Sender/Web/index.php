@@ -1,6 +1,6 @@
 <html><head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Web消息推送器</title>
+  <title>workerman Web消息推送器</title>
   <script type="text/javascript">
   //WebSocket = null;
   </script>
@@ -15,7 +15,7 @@
     // 提交对话
     function onSubmit() {
       var input = document.getElementById("textarea");
-      ws.send(JSON.stringify({"type":"send","to_uid":"all","content":input.value}));
+      ws.send(JSON.stringify({"type":"send","to_client_id":"all","content":input.value}));
       input.value = "";
       input.focus();
     }
