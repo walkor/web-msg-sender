@@ -10,6 +10,9 @@ Web消息实时推送。websocket+PHP多进程（[workerman框架](http://www.wo
 后台发布消息页面:http://ip:3333  
 用户接受消息页面:http://ip:3333/web-msg-sender.html  
 
+如果通信不成功检查防火墙
+/sbin/iptables -I INPUT -p tcp --dport 3333 -j ACCEPT
+/sbin/iptables -I INPUT -p tcp --dport 3232 -j ACCEPT
 
 demo  
 ======
