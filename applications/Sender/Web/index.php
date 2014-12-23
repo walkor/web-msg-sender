@@ -4,13 +4,13 @@
   <script type="text/javascript">
   //WebSocket = null;
   </script>
-  <link href="/css/bootstrap.min.css" rel="stylesheet">
-  <link href="/css/style.css" rel="stylesheet">
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
   <!-- Include these three JS files: -->
- <!-- <script type="text/javascript" src="/js/swfobject.js"></script>
-  <script type="text/javascript" src="/js/web_socket.js"></script>
-  <script type="text/javascript" src="/js/json.js"></script> -->
- <script type="text/javascript" src="/js/sender.js"></script>
+ <!-- <script type="text/javascript" src="js/swfobject.js"></script>
+  <script type="text/javascript" src="js/web_socket.js"></script>
+  <script type="text/javascript" src="js/json.js"></script> -->
+ <script type="text/javascript" src="js/sender.js"></script>
   <script type="text/javascript">
     // 提交对话
     function onSubmit() {
