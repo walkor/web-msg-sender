@@ -1,6 +1,6 @@
 ws = {};
 if (typeof console == "undefined") {    this.console = { log: function (msg) {  } };}
-WEB_SOCKET_SWF_LOCATION = "http://"+document.domain+":3333/swf/WebSocketMain.swf";
+WEB_SOCKET_SWF_LOCATION = "swf/WebSocketMain.swf";
 WEB_SOCKET_DEBUG = true;
 WEB_SOCKET_SUPPRESS_CROSS_DOMAIN_SWF_ERROR = true
 window.onload = function()
