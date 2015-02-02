@@ -1,35 +1,17 @@
-<?php 
-use \Workerman\WebServer;
-use \GatewayWorker\Gateway;
-use \GatewayWorker\BusinessWorker;
+<?php
+/**
+ * run with command 
+ * php start.php start
+ */
 
-// gateway
-$gateway = new Gateway("Websocket://0.0.0.0:8585");
+ini_set('display_errors', 'on');
+use WorkerMan\Worker;
 
-$gateway->name = 'TodpoleGateway';
+require_once __DIR__ . '/Workerman/Autoloader.php';
 
-$gateway->count = 4;
+foreach(glob(__DIR__.'/Applications/*/start.php') as $start_file)
+{
+    require_once $start_file;;
+}
 
-$gateway->lanIp = '127.0.0.1';
-
-$gateway->startPort = 4000;
-
-$gateway->pingInterval = 10;
-
-$gateway->pingData = '{"type":"ping"}';
-
-
-// bussinessWorker
-$worker = new BusinessWorker();
-
-$worker->name = 'TodpoleBusinessWorker';
-
-$worker->count = 4;
-
-
-// WebServer
-$web = new WebServer("http://0.0.0.0:8686");
-
-$web->count = 2;
-
-$web->addRoot('www.your_domain.com', __DIR__.'/Web');
+Worker::runAll();
