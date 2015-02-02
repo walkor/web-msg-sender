@@ -37,7 +37,7 @@ demo
 
 4、命令行运行cd /home/ && git clone https://github.com/walkor/web-msg-sender
 
-5、命令行运行/home/web-msg-sender/bin/workermand start
+5、命令行运行php start.php start -d
 
 
 阿里云主机debian/ubuntu系统安装教程
@@ -50,7 +50,7 @@ demo
 
 4、命令行运行cd /home/ && git clone https://github.com/walkor/web-msg-sender
 
-5、命令行运行/home/web-msg-sender/bin/workermand start
+5、命令行运行php start.php start -d
 
 
  

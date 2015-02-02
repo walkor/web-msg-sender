@@ -20,15 +20,14 @@ class Store
     
     // 如果是memcache存储，则在这里设置memcache的ip端口，注意确保你安装了memcache扩展
     public static $gateway = array(
-        '127.0.0.1:11211',
+        '127.0.0.1:22322',
     );
     
     /* 
-     * 如果使用文件存储，默认系统临时目录下
+     * 如果使用文件存储
      */
     public static $storePath = '';
 }
 
 // 默认系统临时目录下
-$path_array = explode(DIRECTORY_SEPARATOR, __DIR__);
-Store::$storePath = sys_get_temp_dir().'/workerman-'.$path_array[count($path_array)-2].'/';
+Store::$storePath = sys_get_temp_dir() . '/workerman-sender/'; 
