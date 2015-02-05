@@ -163,16 +163,16 @@ class Worker
     public static $logFile = '';
     
     /**
+     * event loop
+     * @var Select/Libevent
+     */
+    public static $globalEvent = null;
+    
+    /**
      * master process pid
      * @var int
      */
     protected static $_masterPid = 0;
-    
-    /**
-     * event loop
-     * @var Select/Libevent
-     */
-    protected static $_globalEvent = null;
     
     /**
      * stream socket of the worker
@@ -285,6 +285,7 @@ class Worker
      */
     public static function init()
     {
+        ini_set('opcache.enable', false);
         if(empty(self::$pidFile))
         {
             $backtrace = debug_backtrace();
@@ -498,11 +499,11 @@ class Worker
         // uninstall  status signal handler
         pcntl_signal(SIGUSR2, SIG_IGN, false);
         // reinstall stop signal handler
-        self::$_globalEvent->add(SIGINT, EventInterface::EV_SIGNAL, array('\Workerman\Worker', 'signalHandler'));
+        self::$globalEvent->add(SIGINT, EventInterface::EV_SIGNAL, array('\Workerman\Worker', 'signalHandler'));
         //  uninstall  reload signal handler
-        self::$_globalEvent->add(SIGUSR1, EventInterface::EV_SIGNAL,array('\Workerman\Worker', 'signalHandler'));
+        self::$globalEvent->add(SIGUSR1, EventInterface::EV_SIGNAL,array('\Workerman\Worker', 'signalHandler'));
         // uninstall  status signal handler
-        self::$_globalEvent->add(SIGUSR2, EventInterface::EV_SIGNAL, array('\Workerman\Worker', 'signalHandler'));
+        self::$globalEvent->add(SIGUSR2, EventInterface::EV_SIGNAL, array('\Workerman\Worker', 'signalHandler'));
     }
     
     /**
@@ -1023,15 +1024,15 @@ class Worker
         
         stream_set_blocking($this->_mainSocket, 0);
         
-        if(self::$_globalEvent)
+        if(self::$globalEvent)
         {
             if($this->transport !== 'udp')
             {
-                self::$_globalEvent->add($this->_mainSocket, EventInterface::EV_READ, array($this, 'acceptConnection'));
+                self::$globalEvent->add($this->_mainSocket, EventInterface::EV_READ, array($this, 'acceptConnection'));
             }
             else
             {
-                self::$_globalEvent->add($this->_mainSocket,  EventInterface::EV_READ, array($this, 'acceptUdpConnection'));
+                self::$globalEvent->add($this->_mainSocket,  EventInterface::EV_READ, array($this, 'acceptUdpConnection'));
             }
         }
     }
@@ -1065,37 +1066,37 @@ class Worker
      */
     public function run()
     {
-        if(!self::$_globalEvent)
+        if(!self::$globalEvent)
         {
             if(extension_loaded('libevent'))
             {
-                self::$_globalEvent = new Libevent();
+                self::$globalEvent = new Libevent();
             }
             else
             {
-                self::$_globalEvent = new Select();
+                self::$globalEvent = new Select();
             }
             if($this->_socketName)
             {
                 if($this->transport !== 'udp')
                 {
-                    self::$_globalEvent->add($this->_mainSocket, EventInterface::EV_READ, array($this, 'acceptConnection'));
+                    self::$globalEvent->add($this->_mainSocket, EventInterface::EV_READ, array($this, 'acceptConnection'));
                 }
                 else
                 {
-                    self::$_globalEvent->add($this->_mainSocket,  EventInterface::EV_READ, array($this, 'acceptUdpConnection'));
+                    self::$globalEvent->add($this->_mainSocket,  EventInterface::EV_READ, array($this, 'acceptUdpConnection'));
                 }
             }
         }
         self::reinstallSignal();
         
-        Timer::init(self::$_globalEvent);
+        Timer::init(self::$globalEvent);
         
         if($this->onWorkerStart)
         {
             call_user_func($this->onWorkerStart, $this);
         }
-        self::$_globalEvent->loop();
+        self::$globalEvent->loop();
     }
     
     /**
@@ -1108,7 +1109,7 @@ class Worker
         {
             call_user_func($this->onWorkerStop, $this);
         }
-        self::$_globalEvent->del($this->_mainSocket, EventInterface::EV_READ);
+        self::$globalEvent->del($this->_mainSocket, EventInterface::EV_READ);
         @fclose($this->_mainSocket);
     }
 
@@ -1132,7 +1133,7 @@ class Worker
             //unblock connection
             stream_set_blocking ($socket, false);
         }
-        $connection = new TcpConnection($new_socket, self::$_globalEvent);
+        $connection = new TcpConnection($new_socket);
         $connection->protocol = $this->_protocol;
         $connection->onMessage = $this->onMessage;
         $connection->onClose = $this->onClose;
@@ -1169,6 +1170,7 @@ class Worker
             $parser = $this->_protocol;
             try
             {
+               ConnectionInterface::$statistics['total_request']++;
                call_user_func($this->onMessage, $connection, $parser::decode($recv_buffer, $connection));
             }
             catch(Exception $e)
