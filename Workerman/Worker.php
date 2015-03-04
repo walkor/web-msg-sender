@@ -21,7 +21,7 @@ class Worker
      * 版本号
      * @var string
      */
-    const VERSION = '3.0.6';
+    const VERSION = '3.0.7';
     
     /**
      * 状态 启动中
@@ -122,6 +122,18 @@ class Worker
      * @var callback
      */
     public $onError = null;
+    
+    /**
+     * 当连接的发送缓冲区满时，如果设置了$onBufferFull回调，则执行
+     * @var callback
+     */
+    public $onBufferFull = null;
+    
+    /**
+     * 当链接的发送缓冲区被清空时，如果设置了$onBufferDrain回调，则执行
+     * @var callback
+     */
+    public $onBufferDrain = null;
     
     /**
      * 当前进程退出时（由于平滑重启或者服务停止导致），如果设置了此回调，则运行
@@ -1045,6 +1057,9 @@ class Worker
      */
     public function listen()
     {
+        // 设置自动加载根目录
+        Autoloader::setRootPath($this->_appInitPath);
+        
         if(!$this->_socketName)
         {
             return;
@@ -1082,8 +1097,8 @@ class Worker
         if(function_exists('socket_import_stream'))
         {
             $socket   = socket_import_stream($this->_mainSocket );
-            socket_set_option($socket, SOL_SOCKET, SO_KEEPALIVE, 1);
-            socket_set_option($socket, SOL_SOCKET, TCP_NODELAY, 1);
+            @socket_set_option($socket, SOL_SOCKET, SO_KEEPALIVE, 1);
+            @socket_set_option($socket, SOL_SOCKET, TCP_NODELAY, 1);
         }
         
         // 设置非阻塞
@@ -1117,6 +1132,9 @@ class Worker
      */
     public function run()
     {
+        // 设置自动加载根目录
+        Autoloader::setRootPath($this->_appInitPath);
+        
         // 如果没有全局事件轮询，则创建一个
         if(!self::$globalEvent)
         {
@@ -1147,9 +1165,6 @@ class Worker
         
         // 用全局事件轮询初始化定时器
         Timer::init(self::$globalEvent);
-        
-        // 设置自动加载根目录
-        Autoloader::setRootPath($this->_appInitPath);
         
         // 如果有设置进程启动回调，则执行
         if($this->onWorkerStart)
@@ -1199,6 +1214,8 @@ class Worker
         $connection->onMessage = $this->onMessage;
         $connection->onClose = $this->onClose;
         $connection->onError = $this->onError;
+        $connection->onBufferDrain = $this->onBufferDrain;
+        $connection->onBufferFull = $this->onBufferFull;
         
         // 如果有设置连接回调，则执行
         if($this->onConnect)
@@ -1226,14 +1243,14 @@ class Worker
         {
             return false;
         }
-        
+        // 模拟一个连接对象
         $connection = new UdpConnection($socket, $remote_address);
         if($this->onMessage)
         {
             $parser = $this->_protocol;
+            ConnectionInterface::$statistics['total_request']++;
             try
             {
-               ConnectionInterface::$statistics['total_request']++;
                call_user_func($this->onMessage, $connection, $parser::decode($recv_buffer, $connection));
             }
             catch(Exception $e)
