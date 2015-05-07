@@ -11,16 +11,16 @@
  * @link http://www.workerman.net/
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
+namespace GatewayWorker\Lib\StoreDriver;
 
-// 如果ini没设置时区，则设置一个默认的
-if(!ini_get('date.timezone') )
+/**
+ * Redis
+ */
+
+class Redis extends \Redis
 {
-    date_default_timezone_set('Asia/Shanghai');
+    public function increment($key)
+    {
+        return parent::incr($key);
+    }
 }
-// 显示错误到终端
-ini_set('display_errors', 'on');
-
-// 连接失败
-define('WORKERMAN_CONNECT_FAIL', 1);
-// 发送失败
-define('WORKERMAN_SEND_FAIL', 2);
