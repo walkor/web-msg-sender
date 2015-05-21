@@ -53,6 +53,20 @@ demo
 5、命令行运行php start.php start -d
 
 
+在windows系统运行
+=======
+（windows系统仅作为开发测试环境）
+首先windows系统需要先下载windows版本workerman，替换Workerman目录。
+
+步骤：
+1、删除Workerman目录包括文件
+2、下载或者clone windows版本workerman，zip地址 https://github.com/walkor/workerman-for-win/archive/master.zip
+3、解压到原Worekrman目录所在位置，同时目录workerman-for-win-master重命名为Workerman(注意第一个字母W为大写)
+4、双击start_for_win.bat启动（系统已经装好php，并设置好环境变量，要求版本php>=5.3.3）
+
+注意：windows系统下无法使用 stop reload status 等命令
+
+
  
 workerman相关参见 [www.workerman.net](http://www.workerman.net/)
 =================
