@@ -79,7 +79,7 @@ workerman更多有趣的应用：
 
 [小蝌蚪聊天室](http://kedou.workerman.net) 
 
-[多人在线flappy birds](http://flap.workerman.net)
+[多人在线flappy birds](http://www.workerman.net/demos/flappy-bird/)
 
 [其它](http://www.workerman.net/applications)
 
