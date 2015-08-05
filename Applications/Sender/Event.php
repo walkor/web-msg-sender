@@ -51,7 +51,7 @@ class Event
                             'from_client_id'=>$client_id,
                             'to_client_id'=>$message_data['to_client_id'],
                             'content'=>nl2br($message_data['content']),
-                            'time'=>date('Y-m-d :i:s'),
+                            'time'=>date('Y-m-d H:i:s'),
                     );
                     return Gateway::sendToClient($message_data['to_client_id'], json_encode($new_message));
                 }
@@ -61,7 +61,7 @@ class Event
                         'from_client_id'=>$client_id,
                         'to_client_id'=>'all',
                         'content'=>nl2br($message_data['content']),
-                        'time'=>date('Y-m-d :i:s'),
+                        'time'=>date('Y-m-d H:i:s'),
                 );
                 return Gateway::sendToAll(json_encode($new_message));
         }
