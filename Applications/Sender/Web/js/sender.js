@@ -20,7 +20,7 @@ window.onload = function()
 	        // 展示消息
 	        case 'send':
 	      	  //{"type":"say","from_client_id":xxx,"to_client_id":"all/client_id","content":"xxx","time":"xxx"}
-	        	if(typeof('show_msg')=="function"){
+	        	if(typeof(show_msg)=="function"){
 	        		show_msg(data);
 	        	}
 	        	else{
