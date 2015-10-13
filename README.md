@@ -1,7 +1,7 @@
 web-msg-sender
 ==============
 
-Web消息实时推送，支持在线用户数实时统计。基于[PHPSocket.IO](https://github.com/walkor/phpsocket.io)开发。
+Web消息实时推送，支持在线用户数实时统计。基于[PHPSocket.IO](https://github.com/walkor/phpsocket.io)开发，基于websocket推送数据，当浏览器不支持websocket时自动通过comet推送数据。
 
 
 注意：服务端只支持在linux系统上运行  
@@ -13,7 +13,9 @@ demo
 ======
 
 接收消息页面：[http://www.workerman.net:2123/](http://www.workerman.net:2123/)    
-推送接口url：[http://www.workerman.net:2121/?type=publish&to=&content=msgcontent](http://www.workerman.net:2121/?type=publish&to=&content=msgcontent)
+推送接口url：[http://www.workerman.net:2121/?type=publish&to=&content=msgcontent](http://www.workerman.net:2121/?type=publish&to=&content=msgcontent)  
+to为接收消息的uid，如果不传递则向所有人推送消息  
+content 为消息内容
 
 环境部署
 ======
