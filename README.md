@@ -1,33 +1,24 @@
 web-msg-sender
 ==============
 
-Web消息实时推送。websocket+PHP多进程（[workerman框架](http://www.workerman.net/workerman)）
+Web消息实时推送，支持在线用户数实时统计。基于[PHPSocket.IO](https://github.com/walkor/phpsocket.io)开发。
 
 
 注意：服务端只支持在linux系统上运行  
 
-
-后台发布消息页面:http://ip:3333  
-用户接受消息页面:http://ip:3333/web-msg-sender.html  
-
-接收消息的页面只依赖Web/js/sender.js（不支持websocket的浏览器也会依赖Web/swf/SebSocketMain.swf，通过flash实现websocket连接到workerman服务），  
-可以将 js/sender.js 和 /swf/SebSocketMain.swf放入你的站点并引用 js/sender.js，便可以接收消息推送 
-
-
-如果通信不成功检查防火墙  
-/sbin/iptables -I INPUT -p tcp --dport 3333 -j ACCEPT  
-/sbin/iptables -I INPUT -p tcp --dport 3232 -j ACCEPT  
-
+接收消息页面:http://ip:2123  
+推送接口url:http://ip:2121/?type=publish&to={$uid}&content=($content)  
+ 
 demo  
 ======
 
-后台发消息的的页面：[workerman.net:3333/](http://workerman.net:3333)    
-用户接受消息的页面：[workerman.net/web-msg-sender.html](http://workerman.net/web-msg-sender.html) 可以多开几个    
+接收消息页面：[http://www.workerman.net:2123/](http://www.workerman.net:2123/)    
+推送接口url：[http://www.workerman.net:2121/?type=publish&to=&content=msgcontent](http://www.workerman.net:2121/?type=publish&to=&content=msgcontent)
 
 环境部署
 ======
 
-阿里云主机centos系统安装教程
+centos系统安装教程
 
 1、命令行运行yum install php-cli php-process git php-devel php-pear libevent-devel
 
@@ -40,7 +31,7 @@ demo
 5、命令行运行php start.php start -d
 
 
-阿里云主机debian/ubuntu系统安装教程
+debian/ubuntu系统安装教程
 
 1、命令行运行apt-get update && apt-get install php5-cli git php-pear php5-dev libevent-dev
 
@@ -53,21 +44,10 @@ demo
 5、命令行运行php start.php start -d
 
 
-在windows系统运行
-=======
-（windows系统仅作为开发测试环境）  
-首先windows系统需要先下载windows版本workerman，替换Workerman目录。  
-
-步骤：  
-1、下载代码到本地,从源码中找到Workerman目录并删除  
-2、下载windows版本workerman，zip地址 https://github.com/walkor/workerman-for-win/archive/master.zip  
-3、解压到原Worekrman目录所在位置，同时目录workerman-for-win-master重命名为Workerman(注意第一个字母W为大写)  
-4、双击start_for_win.bat启动（系统已经装好php，并设置好环境变量，要求版本php>=5.3.3）  
-
-注意：  
-windows系统下无法使用 stop reload status 等命令
-
-如果无法打开页面请尝试关闭服务器防火墙
+如果通信不成功检查防火墙  
+/sbin/iptables -I INPUT -p tcp --dport 2120 -j ACCEPT 
+/sbin/iptables -I INPUT -p tcp --dport 2121 -j ACCEPT 
+/sbin/iptables -I INPUT -p tcp --dport 2123 -j ACCEPT  
 
 
  
