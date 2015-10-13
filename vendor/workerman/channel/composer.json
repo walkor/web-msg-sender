@@ -1,0 +1,12 @@
+{
+    "name"  : "workerman/channel",
+    "type"  : "project",
+    "homepage": "http://www.workerman.net",
+    "license" : "MIT",
+    "require": {
+        "workerman/workerman" : ">=3.1.8"
+    },
+    "autoload": {
+        "psr-4": {"Channel\\": "./src"}
+    }
+}
