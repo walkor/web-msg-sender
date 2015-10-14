@@ -13,6 +13,8 @@ include __DIR__ . '/vendor/workerman/phpsocket.io/src/autoload.php';
 $uidConnectionMap = array();
 // 记录最后一次广播的在线用户数
 $last_online_count = 0;
+// 记录最后一次广播的在线页面数
+$last_online_page_count = 0;
 
 // PHPSocketIO服务
 $sender_io = new SocketIO(2120);
@@ -20,11 +22,11 @@ $sender_io = new SocketIO(2120);
 $sender_io->on('connection', function($socket){
     // 当客户端发来登录事件时触发
     $socket->on('login', function ($uid)use($socket){
-        // 已经login过了则忽略
+        global $uidConnectionMap, $last_online_count, $last_online_page_count;
+        // 已经登录过了
         if(isset($socket->uid)){
             return;
         }
-        global $uidConnectionMap;
         // 更新对应uid的在线数据
         $uid = (string)$uid;
         if(!isset($uidConnectionMap[$uid]))
@@ -37,7 +39,7 @@ $sender_io->on('connection', function($socket){
         $socket->join($uid);
         $socket->uid = $uid;
         // 更新这个socket对应页面的在线数据
-        $socket->emit('update_online_count', count($uidConnectionMap));
+        $socket->emit('update_online_count', "当前<b>{$last_online_count}</b>人在线，共打开<b>{$last_online_page_count}</b>个页面");
     });
     
     // 当客户端断开连接是触发（一般是关闭网页或者跳转刷新导致）
@@ -82,20 +84,22 @@ $sender_io->on('workerStart', function(){
     // 执行监听
     $inner_http_worker->listen();
 
-    // 一个定时器，定时向所有uid推送当前uid在线数
+    // 一个定时器，定时向所有uid推送当前uid在线数及在线页面数
     Timer::add(1, function(){
-        global $uidConnectionMap, $sender_io, $last_online_count;
+        global $uidConnectionMap, $sender_io, $last_online_count, $last_online_page_count;
         $online_count_now = count($uidConnectionMap);
+        $online_page_count_now = array_sum($uidConnectionMap);
         // 只有在客户端在线数变化了才广播，减少不必要的客户端通讯
-        if($last_online_count != $online_count_now)
+        if($last_online_count != $online_count_now || $last_online_page_count != $online_page_count_now)
         {
-            $sender_io->emit('update_online_count', $online_count_now);
+            $sender_io->emit('update_online_count', "当前<b>{$online_count_now}</b>人在线，共打开<b>{$online_page_count_now}</b>个页面");
             $last_online_count = $online_count_now;
+            $last_online_page_count = $online_page_count_now;
         }
     });
 });
 
-// 启动一个webserver，用于吐html css js，方便demo展示
+// 启动一个webserver，用于吐html css js，方便展示
 // 这个webserver服务不是必须的，可以将这些html css js文件放到你的项目下用nginx或者apache跑
 $web = new WebServer('http://0.0.0.0:2123');
 $web->addRoot('localhost', __DIR__ . '/web');

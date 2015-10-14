@@ -2,7 +2,7 @@
 body {
 	margin:0px; padding:0px;
 	font-family: Arial, Helvetica, sans-serif;
-	background:url(../images/repeat.jpg);
+	background:url(/repeat.jpg);
 	font-size:15px;
 	color:#000;
 }
@@ -129,9 +129,7 @@ margin-right:100px!important;
 
 
 
-#footer{width:100%; margin:0 auto; font-size:12px; background-color:#616161; height:30px;  margin-top:200px;}
-#footer a{font-size:12px; text-transform:uppercase; color:#fff; text-decoration:none; line-height:30px; font-weight:bold; padding:0px; margin:0px; float:left; margin-left:10px;}
-#footer a:hover{color:#B1B1B1;}
+#footer{width:100%; margin:0 auto; font-size:12px; color:#0E59AE; height:30px;  margin-top:200px;border-top:1px solid #CCC;padding:18px;}
 .hide{display:none;}
 
 
