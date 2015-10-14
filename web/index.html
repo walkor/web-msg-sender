@@ -17,11 +17,15 @@
     </div>
 <script>
 $(document).ready(function () {
+	// 连接服务端
     var socket = io('http://'+document.domain+':2120');
+	// 使用时替换成真实的uid，这里方便演示使用时间戳
     var uid = Date.parse(new Date());
-    socket.emit('login', uid);
-    $('#uid_box').html('当前用户id：'+uid+'<br>');
-
+	// 连接后登录
+    socket.on('connect', function(){
+    	socket.emit('login', uid);
+    });
+    $('#uid_box').html('当前用户uid：'+uid+'，<br>可以通过 http://'+document.domain+':2121?type=publish&to='+uid+'&content=推送内容 向这个用户推送数据<br>可以通过 http://'+document.domain+':2121?type=publish&to=&content=推送内容 向所有在线用户推送数据);
     socket.on('new_msg', function(msg){
          $('#content').html('收到消息：'+msg);
          $('.notification.sticky').notify();
@@ -29,10 +33,7 @@ $(document).ready(function () {
     socket.on('update_online_count', function(count){
         $('#online_box').html('当前在线' + count + '人在线<br>');
     });
-    //$('.notification.sticky').notify();
 });
-
 </script>
-
 </body>
 </html>

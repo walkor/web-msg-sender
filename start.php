@@ -20,6 +20,10 @@ $sender_io = new SocketIO(2120);
 $sender_io->on('connection', function($socket){
     // 当客户端发来登录事件时触发
     $socket->on('login', function ($uid)use($socket){
+        // 已经login过了则忽略
+        if(isset($socket->uid)){
+            return;
+        }
         global $uidConnectionMap;
         // 更新对应uid的在线数据
         $uid = (string)$uid;
@@ -91,7 +95,7 @@ $sender_io->on('workerStart', function(){
     });
 });
 
-// 启动一个webserver，用于吐html css js，方便展示
+// 启动一个webserver，用于吐html css js，方便demo展示
 // 这个webserver服务不是必须的，可以将这些html css js文件放到你的项目下用nginx或者apache跑
 $web = new WebServer('http://0.0.0.0:2123');
 $web->addRoot('localhost', __DIR__ . '/web');
