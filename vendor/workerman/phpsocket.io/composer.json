@@ -1,0 +1,14 @@
+{
+    "name"  : "workerman/phpsocket.io",
+    "type"  : "project",
+    "keywords": ["socket.io"],
+    "homepage": "http://www.workerman.net",
+    "license" : "MIT",
+    "require": {
+        "workerman/workerman" : ">=3.1.8",
+        "workerman/channel" : ">=1.0.0"
+    },
+    "autoload": {
+        "psr-4": {"PHPSocketIO\\": "./src"}
+    }
+}
