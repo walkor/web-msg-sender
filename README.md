@@ -13,9 +13,11 @@ Web消息实时推送，支持在线用户数实时统计。基于[PHPSocket.IO]
 ======
 
 接收消息页面：[http://www.workerman.net:2123/](http://www.workerman.net:2123/)    
-推送接口url：[http://www.workerman.net:2121/?type=publish&to=&content=msgcontent](http://www.workerman.net:2121/?type=publish&to=&content=msgcontent)  
+后端推送接口url：[http://www.workerman.net:2121/?type=publish&to=&content=msgcontent](http://www.workerman.net:2121/?type=publish&to=&content=msgcontent)  
 to为接收消息的uid，如果不传递则向所有人推送消息  
 content 为消息内容
+
+注：可以通过php或者其它语言的curl功能实现后台推送
 
 启动停止
 ======
