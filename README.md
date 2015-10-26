@@ -30,10 +30,10 @@ php start.php status
 
 如果启动不成功请参考 [Workerman手册](http://doc3.workerman.net/install/requirement.html) 配置环境
 
-如果通信不成功检查防火墙  
-/sbin/iptables -I INPUT -p tcp --dport 2120 -j ACCEPT 
-/sbin/iptables -I INPUT -p tcp --dport 2121 -j ACCEPT 
-/sbin/iptables -I INPUT -p tcp --dport 2123 -j ACCEPT  
+如果通信不成功检查防火墙   
+/sbin/iptables -I INPUT -p tcp --dport 2120 -j ACCEPT   
+/sbin/iptables -I INPUT -p tcp --dport 2121 -j ACCEPT   
+/sbin/iptables -I INPUT -p tcp --dport 2123 -j ACCEPT    
 
  
 workerman相关参见 [www.workerman.net](http://www.workerman.net/)
