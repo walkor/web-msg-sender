@@ -19,7 +19,7 @@ content 为消息内容
 
 注：可以通过php或者其它语言的curl功能实现后台推送
 
-启动停止
+后端服务启动停止
 ======
 ### 启动服务
 php start.php start -d
@@ -30,6 +30,24 @@ php start.php status
 
 如果启动不成功请参考 [Workerman手册](http://doc3.workerman.net/install/requirement.html) 配置环境
 
+前端代码类似：
+====
+```javascript
+// 引入前端文件
+<script src='//cdn.bootcss.com/socket.io/1.3.7/socket.io.js'></script>
+<script>
+// 初始化io对象
+var socket = io('http://'+document.domain+':3120');
+// uid 可以为网站用户的uid，作为例子这里用session_id代理
+var uid = '<?php echo session_id();?>';
+// 当socket连接后发送登录请求
+socket.on('connect', function(){socket.emit('login', uid);});
+// 当服务端推送来消息时触发，这里简单的aler出来，用户可做成自己的展示效果
+socket.on('new_msg', function(msg){alert(msg);});
+</script>
+```
+常见问题：
+====
 如果通信不成功检查防火墙   
 /sbin/iptables -I INPUT -p tcp --dport 2120 -j ACCEPT   
 /sbin/iptables -I INPUT -p tcp --dport 2121 -j ACCEPT   
