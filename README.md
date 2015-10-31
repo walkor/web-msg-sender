@@ -47,7 +47,7 @@ socket.on('new_msg', function(msg){alert(msg);});
 </script>
 ```
 
-后端调用api推送代码类似
+后端调用api向任意用户推送数据
 ====
 ```php
 <?php
