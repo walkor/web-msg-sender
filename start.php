@@ -69,9 +69,10 @@ $sender_io->on('workerStart', function(){
             case 'publish':
                 global $sender_io;
                 $to = @$_POST['to'];
+                $_POST['content'] = htmlspecialchars(@$_POST['content']);
                 // 有指定uid则向uid所在socket组发送数据
                 if($to){
-                    $sender_io->to($to)->emit('new_msg', @$_POST['content']);
+                    $sender_io->to($to)->emit('new_msg', $_POST['content']);
                 // 否则向所有uid推送数据
                 }else{
                     $sender_io->emit('new_msg', @$_POST['content']);
