@@ -34,7 +34,7 @@ class Worker
      * 版本号
      * @var string
      */
-    const VERSION = '3.2.6';
+    const VERSION = '3.2.7';
     
     /**
      * 状态 启动中
@@ -445,6 +445,13 @@ class Worker
             if(empty($worker->user))
             {
                 $worker->user = self::getCurrentUser();
+            }
+            else 
+            {
+                if(posix_getuid() !== 0 && $worker->user != self::getCurrentUser())
+                {
+                    self::log('Waring: You must have the root privileges to change uid and gid.', true);
+                }
             }
             $user_name_length = strlen($worker->user);
             if(self::$_maxUserNameLength < $user_name_length)
@@ -913,11 +920,7 @@ class Worker
         // set uid and gid
         if($uid != posix_getuid() || $gid != posix_getgid())
         {
-            if (posix_getuid() != 0)
-            {
-                self::log('Waring: You must have the root privileges to change uid and gid.', true);
-            }
-            elseif(!posix_setgid($gid) || !posix_initgroups($user_info['name'], $gid) || !posix_setuid($uid))
+            if(!posix_setgid($gid) || !posix_initgroups($user_info['name'], $gid) || !posix_setuid($uid))
             {
                 self::log( "Waring: change gid or uid fail.", true);
             }
@@ -1153,7 +1156,8 @@ class Worker
             file_put_contents(self::$_statisticsFile, "---------------------------------------GLOBAL STATUS--------------------------------------------\n");
             file_put_contents(self::$_statisticsFile, 'Workerman version:' . Worker::VERSION . "          PHP version:".PHP_VERSION."\n", FILE_APPEND);
             file_put_contents(self::$_statisticsFile, 'start time:'. date('Y-m-d H:i:s', self::$_globalStatistics['start_timestamp']).'   run ' . floor((time()-self::$_globalStatistics['start_timestamp'])/(24*60*60)). ' days ' . floor(((time()-self::$_globalStatistics['start_timestamp'])%(24*60*60))/(60*60)) . " hours   \n", FILE_APPEND);
-            file_put_contents(self::$_statisticsFile, 'load average: ' . implode(", ", $loadavg) . "\n", FILE_APPEND);
+            $load_str = 'load average: ' . implode(", ", $loadavg);
+            file_put_contents(self::$_statisticsFile, str_pad($load_str, 33) . 'event-loop:'.(extension_loaded('libevent') ? 'libevent' : 'select')."\n", FILE_APPEND);
             file_put_contents(self::$_statisticsFile,  count(self::$_pidMap) . ' workers       ' . count(self::getAllWorkerPids())." processes\n", FILE_APPEND);
             file_put_contents(self::$_statisticsFile, str_pad('worker_name', self::$_maxWorkerNameLength) . " exit_status     exit_count\n", FILE_APPEND);
             foreach(self::$_pidMap as $worker_id =>$worker_pid_array)
@@ -1497,15 +1501,7 @@ class Worker
         // 如果有设置连接回调，则执行
         if($this->onConnect)
         {
-            try
-            {
-                call_user_func($this->onConnect, $connection);
-            }
-            catch(Exception $e)
-            {
-                ConnectionInterface::$statistics['throw_exception']++;
-                self::log($e);
-            }
+            call_user_func($this->onConnect, $connection);
         }
     }
 
@@ -1533,14 +1529,7 @@ class Worker
                 $recv_buffer = $parser::decode($recv_buffer, $connection);
             }
             ConnectionInterface::$statistics['total_request']++;
-            try
-            {
-               call_user_func($this->onMessage, $connection, $recv_buffer);
-            }
-            catch(Exception $e)
-            {
-                ConnectionInterface::$statistics['throw_exception']++;
-            }
+            call_user_func($this->onMessage, $connection, $recv_buffer);
         }
     }
 }
