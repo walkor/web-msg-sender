@@ -34,7 +34,7 @@ class Worker
      * 版本号
      * @var string
      */
-    const VERSION = '3.2.3';
+    const VERSION = '3.2.6';
     
     /**
      * 状态 启动中
@@ -98,10 +98,16 @@ class Worker
     public $count = 1;
     
     /**
-     * 设置当前worker进程的运行用户，启动时需要root超级权限
+     * 设置当前worker进程的运行用户，需要root超级权限
      * @var string
      */
     public $user = '';
+    
+    /**
+     * 设置当前worker进程的运行用户组，需要root超级权限
+     * @var string
+     */
+    public $group = '';
     
     /**
      * 当前worker进程是否可以平滑重启 
@@ -167,6 +173,12 @@ class Worker
     public $onWorkerStop = null;
     
     /**
+     * 当收到reload命令时的回调函数
+     * @var callback
+     */
+    public $onWorkerReload = null;
+    
+    /**
      * 传输层协议
      * @var string
      */
@@ -183,7 +195,7 @@ class Worker
      * 例如 new worker('http://0.0.0.0:8080');指定使用http协议
      * @var string
      */
-    protected $_protocol = '';
+    public $protocol = '';
     
     /**
      * 当前worker实例初始化目录位置，用于设置应用自动加载的根目录
@@ -325,6 +337,21 @@ class Worker
         'start_timestamp' => 0,
         'worker_exit_info' => array()
     );
+
+    /**
+     * php内置协议
+     * @var array
+     */
+    protected static $_builtinTransports = array(
+        'tcp'   => 'tcp',
+        'udp'   => 'udp',
+        'unix'  => 'unix',
+        'ssl'   => 'tcp',
+        'tsl'   => 'tcp',
+        'sslv2' => 'tcp',
+        'sslv3' => 'tcp',
+        'tls'   => 'tcp'
+    );
     
     /**
      * 运行所有worker实例
@@ -372,6 +399,8 @@ class Worker
         {
             self::$logFile = __DIR__ . '/../workerman.log';
         }
+        touch(self::$logFile);
+        chmod(self::$logFile, 0622);
         // 标记状态为启动中
         self::$_status = self::STATUS_STARTING;
         // 启动时间戳
@@ -413,7 +442,7 @@ class Worker
                 self::$_maxSocketNameLength = $socket_name_length;
             }
             // 获得运行用户名的最大长度
-            if(empty($worker->user) || posix_getuid() !== 0)
+            if(empty($worker->user))
             {
                 $worker->user = self::getCurrentUser();
             }
@@ -828,7 +857,7 @@ class Worker
             self::$_workers = array($worker->workerId => $worker);
             Timer::delAll();
             self::setProcessTitle('WorkerMan: worker process  ' . $worker->name . ' ' . $worker->getSocketName());
-            self::setProcessUser($worker->user);
+            $worker->setUserAndGroup();
             $worker->id = $id;
             $worker->run();
             exit(250);
@@ -855,26 +884,45 @@ class Worker
     }
 
     /**
-     * 尝试设置运行当前进程的用户
-     *
-     * @param $user_name
+     * 尝试设置运行当前进程的用户、用户组
      */
-    protected static function setProcessUser($user_name)
+    public function setUserAndGroup()
     {
-        if(empty($user_name) || posix_getuid() !== 0)
+        // get uid
+        $user_info = posix_getpwnam($this->user);
+        if(!$user_info)
         {
-            return;
+            return self::log( "Waring: User {$this->user} not exsits", true);
         }
-        $user_info = posix_getpwnam($user_name);
-        if($user_info['uid'] != posix_getuid() || $user_info['gid'] != posix_getgid())
+        $uid = $user_info['uid'];
+        // get gid
+        if($this->group)
         {
-            if(!posix_setgid($user_info['gid']) || !posix_setuid($user_info['uid']))
+            $group_info = posix_getgrnam($this->group);
+            if(!$group_info)
             {
-                self::log( 'Notice : Can not run woker as '.$user_name." , You should be root\n", true);
+                return self::log( "Waring: Group {$this->group} not exsits", true);
+            }
+            $gid = $group_info['gid'];
+        }
+        else
+        {
+            $gid = $user_info['gid'];
+        }
+        
+        // set uid and gid
+        if($uid != posix_getuid() || $gid != posix_getgid())
+        {
+            if (posix_getuid() != 0)
+            {
+                self::log('Waring: You must have the root privileges to change uid and gid.', true);
+            }
+            elseif(!posix_setgid($gid) || !posix_initgroups($user_info['name'], $gid) || !posix_setuid($uid))
+            {
+                self::log( "Waring: change gid or uid fail.", true);
             }
         }
     }
-
     
     /**
      * 设置当前进程的名称，在ps aux命令中有用
@@ -1014,6 +1062,14 @@ class Worker
                         $reloadable_pid_array[$pid] = $pid;
                     }
                 }
+                else
+                {
+                    foreach($worker_pid_array as $pid)
+                    {
+                        // 给reloadable=false的进程也发送一个reload信号，触发onWorkerReload
+                        posix_kill($pid, SIGUSR1);
+                    }
+                }
             }
             
             // 得到所有可以重启的进程
@@ -1040,6 +1096,11 @@ class Worker
         {
             // 如果当前worker的reloadable属性为真，则执行退出
             $worker = current(self::$_workers);
+            // 如果有设置Reload回调，则执行
+            if($worker->onWorkerReload)
+            {
+                call_user_func($worker->onWorkerReload, $worker);
+            }
             if($worker->reloadable)
             {
                 self::stopAll();
@@ -1255,25 +1316,27 @@ class Worker
         // 设置自动加载根目录  
         Autoloader::setRootPath($this->_appInitPath);
 
+        $local_socket = $this->_socketName;
         // 获得应用层通讯协议以及监听的地址
         list($scheme, $address) = explode(':', $this->_socketName, 2);
         // 如果有指定应用层协议，则检查对应的协议类是否存在
-        if($scheme != 'tcp' && $scheme != 'udp')
+        if(!isset(self::$_builtinTransports[$scheme]))
         {
             $scheme = ucfirst($scheme);
-            $this->_protocol = '\\Protocols\\'.$scheme;
-            if(!class_exists($this->_protocol))
+            $this->protocol = '\\Protocols\\'.$scheme;
+            if(!class_exists($this->protocol))
             {
-                $this->_protocol = "\\Workerman\\Protocols\\$scheme";
-                if(!class_exists($this->_protocol))
+                $this->protocol = "\\Workerman\\Protocols\\$scheme";
+                if(!class_exists($this->protocol))
                 {
                     throw new Exception("class \\Protocols\\$scheme not exist");
                 }
             }
+            $local_socket = $this->transport.":".$address;
         }
-        elseif($scheme === 'udp')
+        else
         {
-            $this->transport = 'udp';
+            $this->transport = self::$_builtinTransports[$scheme];
         }
         
         // flag
@@ -1285,14 +1348,23 @@ class Worker
         {
             stream_context_set_option($this->_context, 'socket', 'so_reuseport', 1);
         }
-        $this->_mainSocket = stream_socket_server($this->transport.":".$address, $errno, $errmsg, $flags, $this->_context);
+        if($this->transport === 'unix')
+        {
+            umask(0);
+            if(!is_file($address))
+            {
+                register_shutdown_function(function()use($address){@unlink($address);});
+            }
+        }
+        // 创建监听
+        $this->_mainSocket = stream_socket_server($local_socket, $errno, $errmsg, $flags, $this->_context);
         if(!$this->_mainSocket)
         {
             throw new Exception($errmsg);
         }
         
         // 尝试打开tcp的keepalive，关闭TCP Nagle算法
-        if(function_exists('socket_import_stream'))
+        if(function_exists('socket_import_stream') && $this->transport === 'tcp')
         {
             $socket   = socket_import_stream($this->_mainSocket );
             @socket_set_option($socket, SOL_SOCKET, SO_KEEPALIVE, 1);
@@ -1322,7 +1394,7 @@ class Worker
      */
     public function getSocketName()
     {
-        return $this->_socketName ? $this->_socketName : 'none';
+        return $this->_socketName ? lcfirst($this->_socketName) : 'none';
     }
     
     /**
@@ -1404,7 +1476,7 @@ class Worker
     public function acceptConnection($socket)
     {
         // 获得客户端连接
-        $new_socket = @stream_socket_accept($socket, 0);
+        $new_socket = @stream_socket_accept($socket, 0, $remote_address);
         // 惊群现象，忽略
         if(false === $new_socket)
         {
@@ -1412,10 +1484,10 @@ class Worker
         }
         
         // 初始化连接对象
-        $connection = new TcpConnection($new_socket);
+        $connection = new TcpConnection($new_socket, $remote_address);
         $this->connections[$connection->id] = $connection;
         $connection->worker = $this;
-        $connection->protocol = $this->_protocol;
+        $connection->protocol = $this->protocol;
         $connection->onMessage = $this->onMessage;
         $connection->onClose = $this->onClose;
         $connection->onError = $this->onError;
@@ -1454,10 +1526,10 @@ class Worker
         $connection = new UdpConnection($socket, $remote_address);
         if($this->onMessage)
         {
-            if($this->_protocol)
+            if($this->protocol)
             {
                 /** @var \Workerman\Protocols\ProtocolInterface $parser */
-                $parser = $this->_protocol;
+                $parser = $this->protocol;
                 $recv_buffer = $parser::decode($recv_buffer, $connection);
             }
             ConnectionInterface::$statistics['total_request']++;
