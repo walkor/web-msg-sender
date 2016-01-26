@@ -141,9 +141,9 @@ public function __destruct()
     
     public function to($name)
     {
-        if(!isset($this->rooms[$name]))
+        if(!isset($this->_rooms[$name]))
         {
-            $this->rooms[$name] = $name;
+            $this->_rooms[$name] = $name;
         }
         return $this;
     }
@@ -374,7 +374,7 @@ public function __destruct()
         } 
         else 
         {
-            echo('Missing error handler on `socket`.');
+            //echo('Missing error handler on `socket`.');
         }
     }
     
