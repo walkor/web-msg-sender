@@ -82,7 +82,7 @@ public function __destruct()
         return null;
     }
  
-    public function emit($ev)
+    public function emit($ev = null)
     {
         $args = func_get_args();
         if (isset(self::$events[$ev]))
