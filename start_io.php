@@ -4,6 +4,8 @@ use Workerman\WebServer;
 use Workerman\Lib\Timer;
 use PHPSocketIO\SocketIO;
 
+include __DIR__ . '/vendor/autoload.php';
+
 // 全局数组保存uid在线数据
 $uidConnectionMap = array();
 // 记录最后一次广播的在线用户数
