@@ -39,7 +39,7 @@ php start.php status
 <script src='//cdn.bootcss.com/socket.io/1.3.7/socket.io.js'></script>
 <script>
 // 初始化io对象
-var socket = io('http://'+document.domain+':3120');
+var socket = io('http://'+document.domain+':2120');
 // uid 可以为网站用户的uid，作为例子这里用session_id代替
 var uid = '<?php echo session_id();?>';
 // 当socket连接后发送登录请求
