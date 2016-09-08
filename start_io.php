@@ -56,6 +56,7 @@ $sender_io->on('connection', function($socket){
 
 // 当$sender_io启动后监听一个http端口，通过这个端口可以给任意uid或者所有uid推送数据
 $sender_io->on('workerStart', function(){
+    global $uidConnectionMap;
     // 监听一个http端口
     $inner_http_worker = new Worker('http://0.0.0.0:2121');
     // 当http客户端发来数据时触发
@@ -74,8 +75,12 @@ $sender_io->on('workerStart', function(){
                 }else{
                     $sender_io->emit('new_msg', @$_POST['content']);
                 }
-                // http接口返回ok
-                return $http_connection->send('ok');
+                // http接口返回，如果用户离线socket返回fail
+                if($to && !isset($uidConnectionMap[$to])){
+                    return $http_connection->send('error');
+                }else{
+                    return $http_connection->send('ok');
+                }
         }
         return $http_connection->send('fail');
     };
