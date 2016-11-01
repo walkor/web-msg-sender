@@ -21,6 +21,12 @@ content 为消息内容
 
 注：可以通过php或者其它语言的curl功能实现后台推送
 
+下载安装
+======
+1、git clone https://github.com/walkor/web-msg-sender
+
+2、composer install
+
 后端服务启动停止
 ======
 ### 启动服务
