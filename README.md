@@ -3,10 +3,6 @@ web-msg-sender
 
 Web消息实时推送，支持在线用户数实时统计。基于[PHPSocket.IO](https://github.com/walkor/phpsocket.io)开发，使用websocket推送数据，当浏览器不支持websocket时自动切换comet推送数据。
 
-注意：此版本服务端只支持在linux系统上运行。windows版本在这里下载 https://github.com/walkor/web-msg-sender-for-win
-
-
-
 效果截图
 ======
 ![web-msg-sender-demo](http://www.workerman.net/img/web-msg-sender-demo.png)
@@ -29,12 +25,16 @@ content 为消息内容
 
 后端服务启动停止
 ======
+## Linux系统
 ### 启动服务
 php start.php start -d
 ### 停止服务
 php start.php stop
 ### 服务状态
 php start.php status
+
+## windows系统
+双击start_for_win.bat
 
 如果启动不成功请参考 [Workerman手册](http://doc3.workerman.net/install/requirement.html) 配置环境
 
