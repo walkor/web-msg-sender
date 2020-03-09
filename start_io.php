@@ -1,8 +1,10 @@
 <?php
 use Workerman\Worker;
-use Workerman\WebServer;
-use Workerman\Lib\Timer;
+use Workerman\Timer;
 use PHPSocketIO\SocketIO;
+use Workerman\Protocols\Http\Request;
+use Workerman\Connection\TcpConnection;
+
 
 include __DIR__ . '/vendor/autoload.php';
 
@@ -59,21 +61,22 @@ $sender_io->on('workerStart', function(){
     // 监听一个http端口
     $inner_http_worker = new Worker('http://0.0.0.0:2121');
     // 当http客户端发来数据时触发
-    $inner_http_worker->onMessage = function($http_connection, $data){
+    $inner_http_worker->onMessage = function(TcpConnection $http_connection, Request $request){
         global $uidConnectionMap;
-        $_POST = $_POST ? $_POST : $_GET;
+        $post = $request->post();
+        $post = $post ? $post : $request->get();
         // 推送数据的url格式 type=publish&to=uid&content=xxxx
-        switch(@$_POST['type']){
+        switch(@$post['type']){
             case 'publish':
                 global $sender_io;
-                $to = @$_POST['to'];
-                $_POST['content'] = htmlspecialchars(@$_POST['content']);
+                $to = @$post['to'];
+                $post['content'] = htmlspecialchars(@$post['content']);
                 // 有指定uid则向uid所在socket组发送数据
                 if($to){
-                    $sender_io->to($to)->emit('new_msg', $_POST['content']);
+                    $sender_io->to($to)->emit('new_msg', $post['content']);
                 // 否则向所有uid推送数据
                 }else{
-                    $sender_io->emit('new_msg', @$_POST['content']);
+                    $sender_io->emit('new_msg', @$post['content']);
                 }
                 // http接口返回，如果用户离线socket返回fail
                 if($to && !isset($uidConnectionMap[$to])){
