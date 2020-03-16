@@ -11,7 +11,7 @@ include __DIR__ . '/vendor/autoload.php';
 $web = new Worker('http://0.0.0.0:2123');
 $web->name = 'web';
 
-define('WEBROOT', __DIR__ . '/web');
+define('WEBROOT', __DIR__ . DIRECTORY_SEPARATOR . 'web');
 
 $web->onMessage = function (TcpConnection $connection, Request $request) {
     $path = $request->path();
